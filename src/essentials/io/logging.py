@@ -38,9 +38,15 @@ if _log_level is None:
     _log_level = _name_to_level_map[_log_level_name_fallback]
 
 
-def get_logger(name: str or Type) -> spdlog.Logger:
-    if isinstance(name, Type):
-        name = name.__name__
+def get_logger(*name: str or Type) -> spdlog.Logger:
+    parts = []
+
+    for part in name:
+        if isinstance(part, Type):
+            part = part.__name__
+        parts.append(part)
+
+    name = ':'.join(parts)
 
     if name not in _loggers:
         # FIXME: colored=False is required for spdlog to work on windows
@@ -50,6 +56,12 @@ def get_logger(name: str or Type) -> spdlog.Logger:
         _loggers[name] = logger
 
     return _loggers[name]
+
+
+def drop_logger(logger: spdlog.Logger) -> None:
+    name = logger.name()
+    spdlog.drop(name)
+    _loggers.pop(name)
 
 
 _core_logger = get_logger('core')
