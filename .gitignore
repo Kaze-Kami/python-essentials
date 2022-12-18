@@ -1,0 +1,10 @@
+# python and idea stuff
+.venv/
+.idea/
+!/.idea/runConfigurations
+
+# build stuff
+MANIFEST
+dist/
+build/
+*.egg-info/
