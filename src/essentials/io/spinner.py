@@ -53,4 +53,4 @@ class Spinner:
             time.sleep(.25)
 
         # FIXME: I think we need to 'blank the line' (e.g. print a lot of spaces)
-        print('\r')
+        print('\r', end='')
