@@ -1,1 +1,4 @@
 v0.1, 2022-12-18 -- Initial release.
+
+.dev0, 2022-12-18
+    - add Spinner
