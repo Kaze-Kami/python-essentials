@@ -2,6 +2,7 @@
 .venv/
 .idea/
 !/.idea/runConfigurations
+__pycache__/
 
 # build stuff
 MANIFEST

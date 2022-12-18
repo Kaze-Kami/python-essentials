@@ -12,7 +12,7 @@ setup(
         description='Python utilities I\'ve written and use',
         author='Kami Kaze',
         # todo: author_email='',
-        url='https://github.com/Kaze-Kami/klib',
+        url='https://github.com/Kaze-Kami/python-essentials',
         package_dir={'': 'src'},
         packages=[
             'essentials',
