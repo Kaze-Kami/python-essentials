@@ -7,6 +7,7 @@ Self-Updating Spinner
 """
 
 import sys
+import time
 from threading import Thread
 from typing.io import IO
 
@@ -26,7 +27,7 @@ class Spinner:
     def __enter__(self):
         self._state = 0
         self._running = True
-        self._daemon = Thread(self._print)
+        self._daemon = Thread(target=self._print)
         self._daemon.start()
         return self
 
@@ -47,4 +48,9 @@ class Spinner:
             if self._msg:
                 text = f' {self._msg}'
 
-            print(f'\r{state}{text}', file=self._sink, flush=self._flush)
+            print(f'\r{state}{text}', file=self._sink, flush=self._flush, end='')
+
+            time.sleep(.25)
+
+        # FIXME: I think we need to 'blank the line' (e.g. print a lot of spaces)
+        print('\r')
