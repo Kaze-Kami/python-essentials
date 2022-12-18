@@ -12,6 +12,7 @@ https://github.com/gabime/spdlog
 
 import os
 import sys
+from typing import Type
 
 import spdlog
 from spdlog import LogLevel
@@ -37,7 +38,10 @@ if _log_level is None:
     _log_level = _name_to_level_map[_log_level_name_fallback]
 
 
-def get_logger(name: str) -> spdlog.Logger:
+def get_logger(name: str or Type) -> spdlog.Logger:
+    if isinstance(name, Type):
+        name = name.__name__
+
     if name not in _loggers:
         # FIXME: colored=False is required for spdlog to work on windows
         logger = spdlog.ConsoleLogger(name, colored=False)
