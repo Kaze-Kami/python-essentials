@@ -19,5 +19,5 @@ setup(
         ],
         license='MIT Licence',
         long_description=open('README.md').read(),
-        reqires=open('requirements.txt').readlines(),
+        install_requires=open('requirements.txt').read().split('\n'),
 )
