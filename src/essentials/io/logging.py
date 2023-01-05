@@ -51,7 +51,7 @@ def get_logger(*name: str or Type) -> spdlog.Logger:
     if name not in _loggers:
         # FIXME: colored=False is required for spdlog to work on windows
         logger = spdlog.ConsoleLogger(name, colored=False)
-        logger.set_pattern('%T [%l | %n]: %v', spdlog.PatternTimeType.local)
+        logger.set_pattern('%T [%n|%l]: %v', spdlog.PatternTimeType.local)
         logger.set_level(_log_level)
         _loggers[name] = logger
 
