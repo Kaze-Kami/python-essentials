@@ -30,3 +30,7 @@ class CircularBuffer:
     @property
     def size(self):
         return self._size
+
+    @property
+    def data(self):
+        return self._data
