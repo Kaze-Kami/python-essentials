@@ -5,9 +5,14 @@ Collection of python utility modules
 By Kami-Kaze
 
 # Installing
-Run `pip install git@<git repo>`
+To build spdlog `pybind11` is required.
+Either install it manually, or run the pip 
+command twice (the first one will fail to install spdlog but install `pybind11`)
 
-if building the spdlog wheel fails, just run the command again, by that time pybind11 will be present.
+- Pip: `pip install git+https://github.com/Kaze-Kami/python-essentials.git`
+- Requirements.txt: `python-essentials @ git+https://github.com/Kaze-Kami/python-essentials.git`
+ 
+**NB:** If you need to update due to repo changes run pip with `--upgrade --force-reinstall`
 
 # IO
 **IO Module**
