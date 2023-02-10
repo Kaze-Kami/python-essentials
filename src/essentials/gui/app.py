@@ -15,6 +15,9 @@ import pystray
 from PIL import Image
 from imgui.integrations.glfw import GlfwRenderer
 
+from essentials.gui.core import _CORE_LOGGER
+from essentials.io.logging import log_call
+
 
 class AppConfig:
     def __init__(self, width: int, height: int, title: str, icon_path: str, start_minimized: bool = False):
@@ -34,23 +37,29 @@ class AppConfig:
                     if not cls.__name__ == cls_name:
                         raise RuntimeError(f'Cannot convert config of type {cls_name} to {cls.__name__}!')
                     return cls(**data)
-            except json.JSONDecodeError:
-                pass
+            except (json.JSONDecodeError or TypeError) as e:
+                _CORE_LOGGER.error(f'Failed to load config: {e} using fallback...')
+        else:
+            _CORE_LOGGER.warn(f'No config found at {path} using fallback...')
         if fallback is not None:
             return fallback()
-        raise RuntimeError(f'No config found at {path} and no fallback factory given!')
+        raise RuntimeError(f'No fallback factory for config given!')
 
     @classmethod
     def save(cls, path: str, config: 'AppConfig'):
-        data = config.__dict__
-        data['__name__'] = cls.__name__
-        with open(path, 'w') as f:
-            json.dump(data, f)
+        try:
+            data = config.__dict__
+            data['__name__'] = cls.__name__
+            with open(path, 'w') as f:
+                json.dump(data, f)
+        except (FileNotFoundError or TypeError) as e:
+            _CORE_LOGGER.error(f'Failed to save config to {path}: {e}')
 
 
 class App:
     def __init__(self, config: AppConfig):
         self._config = config
+        self._logger = _CORE_LOGGER
 
         self._icon_image = Image.open(config.icon_path)
         self._window = self._init_glfw(config.width, config.height, config.title, self._icon_image)
@@ -58,6 +67,7 @@ class App:
         self._tray_icon = self._init_tray(config.title, self._icon_image)
 
         self._should_exit = False
+        self._logger.info('Initialization complete')
 
     def update(self):
         """
@@ -120,9 +130,11 @@ class App:
                 self._imgui_frame()
         except KeyboardInterrupt:
             pass
-
-        self.on_stop()
-        self._shutdown()
+        except Exception as e:
+            self._logger.error(f'Exception while running: {e}')
+            raise e
+        finally:
+            self._shutdown()
 
     # noinspection PyMethodMayBeStatic
     def get_additional_tray_actions(self) -> list[pystray.MenuItem]:
@@ -132,6 +144,7 @@ class App:
         """
         return []
 
+    @log_call(_CORE_LOGGER, name='Initialize GLFW')
     def _init_glfw(self, width: int, height: int, title: str, icon: Image):
         if not glfw.init():
             raise Exception("Could not initialize OpenGL context")
@@ -160,6 +173,7 @@ class App:
         glfw.make_context_current(window)
         return window
 
+    @log_call(_CORE_LOGGER, name='Initialize ImGui')
     def _init_imgui(self):
         imgui.create_context()
         imgui_impl = GlfwRenderer(self._window)
@@ -169,6 +183,7 @@ class App:
 
         return imgui_impl
 
+    @log_call(_CORE_LOGGER, name='Initialize tray')
     def _init_tray(self, title, image: Image):
         tray_icon = pystray.Icon(title, image, title, menu=[
             pystray.MenuItem('', self._show_window, default=True, visible=False),
@@ -217,7 +232,15 @@ class App:
     def _stop(self, *_):
         self._should_exit = True
 
+    @log_call(_CORE_LOGGER, name='Shutdown')
     def _shutdown(self):
-        self._imgui_impl.shutdown()
-        glfw.terminate()
-        self._tray_icon.stop()
+        try:
+            self.on_stop()
+        except Exception as e:
+            self._logger.error(f'Exception while running on_stop: {e}')
+            raise e
+        finally:
+            self._imgui_impl.shutdown()
+            glfw.terminate()
+            self._tray_icon.stop()
+            self._logger.info('Shutdown complete')

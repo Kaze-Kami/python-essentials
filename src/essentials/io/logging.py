@@ -12,7 +12,8 @@ https://github.com/gabime/spdlog
 
 import os
 import sys
-from typing import Type
+from functools import wraps
+from typing import Type, Callable, Any
 
 import spdlog
 from spdlog import LogLevel
@@ -62,6 +63,24 @@ def drop_logger(logger: spdlog.Logger) -> None:
     name = logger.name()
     spdlog.drop(name)
     _loggers.pop(name)
+
+
+def log_call(logger: spdlog.Logger | str, log_level=LogLevel.DEBUG, name: str | None = None):
+    if isinstance(logger, str):
+        logger = get_logger(logger)
+
+    def decorator(f: Callable[..., Any]):
+        f_name = name or f.__name__
+
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            logger.log(log_level, f'{f_name}')
+            r = f(*args, **kwargs)
+            return r
+
+        return wrapper
+
+    return decorator
 
 
 _core_logger = get_logger('core')
