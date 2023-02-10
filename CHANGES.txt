@@ -8,3 +8,4 @@ v0.1, 2022-12-18 -- Initial release.
     - update requirements
     - add path dict
     - add app
+    - add ciruclar buffer
