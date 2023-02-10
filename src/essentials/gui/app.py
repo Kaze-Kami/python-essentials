@@ -27,12 +27,15 @@ class AppConfig:
     @classmethod
     def load(cls, path: str, fallback: Callable[[], 'AppConfig'] | None = None):
         if os.path.exists(path) and os.path.isfile(path):
-            with open(path, 'rb') as f:
-                data: dict = json.load(f)
-                cls_name = data.pop('__name__')
-                if not cls.__name__ == cls_name:
-                    raise RuntimeError(f'Cannot convert config of type {cls_name} to {cls.__name__}!')
-                return cls(**data)
+            try:
+                with open(path, 'rb') as f:
+                    data: dict = json.load(f)
+                    cls_name = data.pop('__name__')
+                    if not cls.__name__ == cls_name:
+                        raise RuntimeError(f'Cannot convert config of type {cls_name} to {cls.__name__}!')
+                    return cls(**data)
+            except json.JSONDecodeError:
+                pass
         if fallback is not None:
             return fallback()
         raise RuntimeError(f'No config found at {path} and no fallback factory given!')
@@ -41,8 +44,8 @@ class AppConfig:
     def save(cls, path: str, config: 'AppConfig'):
         data = config.__dict__
         data['__name__'] = cls.__name__
-        with open(path, 'wb') as f:
-            json.dump(f, data)
+        with open(path, 'w') as f:
+            json.dump(data, f)
 
 
 class App:
