@@ -16,7 +16,8 @@ setup(
         package_dir={'': 'src'},
         packages=[
             'essentials',
-            'essentials.io'
+            'essentials.io',
+            'essentials.containers',
         ],
         license='MIT Licence',
         long_description=open('README.md').read(),
