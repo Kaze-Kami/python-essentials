@@ -116,16 +116,15 @@ class App:
         Main entry point for application
         :return:
         """
-
-        # TODO: Maybe initialize application here, instead of in __init__
-        if not self._config.start_minimized:
-            self._show_window()
-
-        self._should_exit = False
-        self._tray_icon.run_detached()
-        self.on_start()
-
         try:
+            # TODO: Maybe initialize application here, instead of in __init__
+            if not self._config.start_minimized:
+                self._show_window()
+
+            self._should_exit = False
+            self._tray_icon.run_detached()
+            self.on_start()
+
             while not self._should_exit:
                 glfw.poll_events()
                 self._imgui_impl.process_inputs()
