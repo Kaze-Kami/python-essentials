@@ -18,6 +18,7 @@ setup(
             'essentials',
             'essentials.io',
             'essentials.containers',
+            'essentials.gui',
         ],
         license='MIT Licence',
         long_description=open('README.md').read(),
