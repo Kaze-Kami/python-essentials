@@ -97,6 +97,13 @@ class App:
         """
         pass
 
+    def on_start(self):
+        """
+        Callback to be overwritten by client
+        :return:
+        """
+        pass
+
     def on_stop(self):
         """
         Callback to be overwritten by client
@@ -116,6 +123,7 @@ class App:
 
         self._should_exit = False
         self._tray_icon.run_detached()
+        self.on_start()
 
         try:
             while not self._should_exit:
