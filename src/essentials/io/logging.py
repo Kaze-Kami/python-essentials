@@ -84,4 +84,4 @@ def log_call(logger: spdlog.Logger | str, log_level=LogLevel.DEBUG, name: str | 
 
 
 _core_logger = get_logger('core')
-_core_logger.info('Logging initialized')
+_core_logger.debug('Logging initialized')

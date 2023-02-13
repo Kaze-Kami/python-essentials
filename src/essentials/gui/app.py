@@ -9,11 +9,14 @@ import OpenGL.GL as gl
 import glfw
 import imgui
 import pystray
+import ctypes
 from PIL import Image
 from imgui.integrations.glfw import GlfwRenderer
 
 from essentials.gui.core import _CORE_LOGGER
 from essentials.io.logging import log_call
+
+_DWM = ctypes.windll.dwmapi
 
 
 class AppConfig:
@@ -150,8 +153,23 @@ class App:
         # window icon
         glfw.set_window_icon(window, 1, [icon])
 
-        # init opengl and imgui
+        # init opengl
         glfw.make_context_current(window)
+
+        # enable dark mode (see https://github.com/fyne-io/fyne/pull/2216/files)
+        hndl = glfw.get_win32_window(window)
+
+        # check comp (aero) is  enabled (see https://stackoverflow.com/a/48207410/10330869)
+        is_comp_enabled = ctypes.c_bool()
+        err = _DWM.DwmIsCompositionEnabled(ctypes.byref(is_comp_enabled))
+        if not err and is_comp_enabled:
+            attr = 20  # DWMWA_USE_IMMERSIVE_DARK_MODE (see https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute)
+            # see https://learn.microsoft.com/en-us/windows/win32/api/dwmapi/ne-dwmapi-dwmwindowattribute
+            enabled = ctypes.c_int(1)
+            err = _DWM.DwmSetWindowAttribute(hndl, attr, ctypes.byref(enabled), ctypes.sizeof(enabled))
+            if err:
+                _CORE_LOGGER.error(f'Unable to enable dark mode ({err=}')
+
         return window
 
     @log_call(_CORE_LOGGER, name='Initialize ImGui')
