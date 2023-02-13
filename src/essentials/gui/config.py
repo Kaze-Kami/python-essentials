@@ -13,10 +13,7 @@ from essentials.gui.core import _CORE_LOGGER
 
 
 class Config:
-    def __init__(self, **kwargs):
-        pass
-
-    @classmethod
+    @staticmethod
     def load(cls, path: str, fallback: Callable[[], 'Config'] | None = None):
         if os.path.exists(path) and os.path.isfile(path):
             try:
@@ -34,7 +31,7 @@ class Config:
             return fallback()
         raise RuntimeError(f'No fallback factory for config given!')
 
-    @classmethod
+    @staticmethod
     def save(cls, path: str, config: 'Config'):
         try:
             data = config.__dict__
