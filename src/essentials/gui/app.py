@@ -17,12 +17,17 @@ from essentials.io.logging import log_call
 
 
 class AppConfig:
-    def __init__(self, width: int, height: int, title: str, icon_path: str, start_minimized: bool = False):
+    def __init__(self,
+                 width: int, height: int,
+                 title: str, icon_path: str,
+                 start_minimized: bool = False,
+                 background_color: tuple[float, float, float] = (.1, .1, .1)):
         self.width = width
         self.height = height
         self.title = title
         self.icon_path = icon_path
         self.start_minimized = start_minimized
+        self.background_color = background_color
 
 
 class App:
@@ -155,7 +160,7 @@ class App:
         imgui_impl = GlfwRenderer(self._window)
 
         # TODO: theme/background color from config
-        gl.glClearColor(.1, .1, .1, 1.)
+        gl.glClearColor(*self._config.background_color, 1.)
 
         return imgui_impl
 
