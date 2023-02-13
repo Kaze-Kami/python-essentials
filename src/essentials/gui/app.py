@@ -158,10 +158,7 @@ class App:
     def _init_imgui(self):
         imgui.create_context()
         imgui_impl = GlfwRenderer(self._window)
-
-        # TODO: theme/background color from config
-        gl.glClearColor(*self._config.background_color, 1.)
-
+        gl.glClearColor(0, 0, 0, 1.)
         return imgui_impl
 
     @log_call(_CORE_LOGGER, name='Initialize tray')
@@ -182,6 +179,9 @@ class App:
         imgui.new_frame()
         imgui.set_next_window_position(0, 0)
         imgui.set_next_window_size(*io.display_size)
+        imgui.push_style_var(imgui.STYLE_WINDOW_ROUNDING, 0.)
+        imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0.)
+        imgui.push_style_color(imgui.COLOR_WINDOW_BACKGROUND, *self._config.background_color, 1.0)
         imgui.begin('', False,
                     imgui.WINDOW_NO_NAV |
                     imgui.WINDOW_NO_NAV_INPUTS |
@@ -193,6 +193,8 @@ class App:
         self.render()
 
         imgui.end()
+        imgui.pop_style_color()
+        imgui.pop_style_var(2)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
         imgui.render()
