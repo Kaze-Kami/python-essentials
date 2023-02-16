@@ -38,10 +38,10 @@ class App:
         self._config = config
         self._logger = _CORE_LOGGER
 
-        self._icon_image = Image.open(config.icon_path)
+        self._icon_image = Image.open(config.icon_path) if config.icon_path is not None else None
         self._window = self._init_glfw(config.width, config.height, config.title, self._icon_image)
         self._imgui_impl = self._init_imgui()
-        self._tray_icon = self._init_tray(config.title, self._icon_image)
+        self._tray_icon = self._init_tray(config.title, self._icon_image) if self._icon_image is not None else None
 
         self._should_exit = False
         self._logger.info('Initialization complete')
@@ -99,7 +99,8 @@ class App:
                 self._show_window()
 
             self._should_exit = False
-            self._tray_icon.run_detached()
+            if self._tray_icon is not None:
+                self._tray_icon.run_detached()
             self.on_start()
 
             while not self._should_exit:
@@ -151,7 +152,8 @@ class App:
 
         glfw.set_window_iconify_callback(window, self._on_minimize)
         # window icon
-        glfw.set_window_icon(window, 1, [icon])
+        if icon is not None:
+            glfw.set_window_icon(window, 1, [icon])
 
         # init opengl
         glfw.make_context_current(window)
@@ -220,7 +222,7 @@ class App:
         glfw.swap_buffers(self._window)
 
     def _on_minimize(self, _, minimized):
-        if minimized:
+        if minimized and self._tray_icon is not None:
             self.on_hide()
             glfw.hide_window(self._window)
 
@@ -243,5 +245,6 @@ class App:
         finally:
             self._imgui_impl.shutdown()
             glfw.terminate()
-            self._tray_icon.stop()
+            if self._tray_icon is not None:
+                self._tray_icon.stop()
             self._logger.info('Shutdown complete')
