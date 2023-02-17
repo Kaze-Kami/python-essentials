@@ -10,3 +10,6 @@ v0.1, 2022-12-18 -- Initial release.
     - add app
     - add ciruclar buffer
     - add config
+    :: 2023-02-17
+    - add text utils
+    - add versioning utils
