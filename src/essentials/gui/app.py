@@ -4,12 +4,13 @@
 
 @author Kami-Kaze
 """
+import ctypes
+from dataclasses import dataclass
 
 import OpenGL.GL as gl
 import glfw
 import imgui
 import pystray
-import ctypes
 from PIL import Image
 from imgui.integrations.glfw import GlfwRenderer
 
@@ -19,18 +20,15 @@ from essentials.io.logging import log_call
 _DWM = ctypes.windll.dwmapi
 
 
+@dataclass
 class AppConfig:
-    def __init__(self,
-                 width: int, height: int,
-                 title: str, icon_path: str,
-                 start_minimized: bool = False,
-                 background_color: tuple[float, float, float] = (.1, .1, .1)):
-        self.width = width
-        self.height = height
-        self.title = title
-        self.icon_path = icon_path
-        self.start_minimized = start_minimized
-        self.background_color = background_color
+    width: int
+    height: int
+    title: str
+    icon_path: str
+    resizable: bool = False,
+    start_minimized: bool = False,
+    background_color: tuple[float, float, float] = (.1, .1, .1)
 
 
 class App:
@@ -38,10 +36,15 @@ class App:
         self._config = config
         self._logger = _CORE_LOGGER
 
-        self._icon_image = Image.open(config.icon_path) if config.icon_path is not None else None
-        self._window = self._init_glfw(config.width, config.height, config.title, self._icon_image)
+        self._icon_image = None
+        if config.icon_path is not None:
+            self._icon_image = Image.open(config.icon_path)
+        self._window = self._init_glfw()
         self._imgui_impl = self._init_imgui()
-        self._tray_icon = self._init_tray(config.title, self._icon_image) if self._icon_image is not None else None
+
+        self._tray_icon = None
+        if self._icon_image is not None:
+            self._tray_icon = self._init_tray()
 
         self._should_exit = False
         self._logger.info('Initialization complete')
@@ -130,7 +133,7 @@ class App:
         return []
 
     @log_call(_CORE_LOGGER, name='Initialize GLFW')
-    def _init_glfw(self, width: int, height: int, title: str, icon: Image):
+    def _init_glfw(self):
         if not glfw.init():
             raise Exception("Could not initialize OpenGL context")
 
@@ -142,9 +145,12 @@ class App:
         glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
         glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.TRUE)
 
+        if not self._config.resizable:
+            glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
+
         # Create a windowed mode window and its OpenGL context
         window = glfw.create_window(
-                int(width), int(height), title, None, None
+                int(self._config.width), int(self._config.height), self._config.title, None, None
         )
         if not window:
             glfw.terminate()
@@ -152,8 +158,8 @@ class App:
 
         glfw.set_window_iconify_callback(window, self._on_minimize)
         # window icon
-        if icon is not None:
-            glfw.set_window_icon(window, 1, [icon])
+        if self._icon_image is not None:
+            glfw.set_window_icon(window, 1, [self._icon_image])
 
         # init opengl
         glfw.make_context_current(window)
@@ -182,8 +188,8 @@ class App:
         return imgui_impl
 
     @log_call(_CORE_LOGGER, name='Initialize tray')
-    def _init_tray(self, title, image: Image):
-        tray_icon = pystray.Icon(title, image, title, menu=[
+    def _init_tray(self):
+        tray_icon = pystray.Icon(self._config.title, self._icon_image, self._config.title, menu=[
             pystray.MenuItem('', self._show_window, default=True, visible=False),
             *self.get_additional_tray_actions(),
             pystray.MenuItem('Exit', self._stop)
