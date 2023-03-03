@@ -23,7 +23,7 @@ class Config:
                     if not cls.__name__ == cls_name:
                         raise RuntimeError(f'Cannot convert config of type {cls_name} to {cls.__name__}!')
                     return cls(**data)
-            except (json.JSONDecodeError or TypeError) as e:
+            except (json.JSONDecodeError, TypeError) as e:
                 _CORE_LOGGER.error(f'Failed to load config: {e} using fallback...')
         else:
             _CORE_LOGGER.warn(f'No config found at {path} using fallback...')
@@ -38,5 +38,5 @@ class Config:
             data['__name__'] = cls.__name__
             with open(path, 'w') as f:
                 json.dump(data, f)
-        except (FileNotFoundError or TypeError) as e:
+        except (FileNotFoundError, TypeError) as e:
             _CORE_LOGGER.error(f'Failed to save config to {path}: {e}')
