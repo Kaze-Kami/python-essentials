@@ -218,9 +218,10 @@ class App:
 
         self.render()
 
-        imgui.end()
+
         imgui.pop_style_color()
         imgui.pop_style_var(2)
+        imgui.end()
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
 
         imgui.render()
