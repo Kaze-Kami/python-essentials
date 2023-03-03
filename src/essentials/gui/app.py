@@ -25,7 +25,7 @@ class AppConfig:
     width: int
     height: int
     title: str
-    icon_path: str
+    icon_path: str = None
     resizable: bool = False
     start_minimized: bool = False
     background_color: tuple[float, float, float] = (.1, .1, .1)
