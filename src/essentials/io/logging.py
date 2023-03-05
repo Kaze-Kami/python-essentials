@@ -43,16 +43,19 @@ if _log_level is None:
     print(f'Using fallback: {_log_level_name_fallback}', file=sys.stderr)
     _log_level = _name_to_level_map[_log_level_name_fallback]
 
+_console_sink = spdlog.stdout_sink_mt()
+_console_sink.set_level(_log_level)
+
 if _log_file_level is None and _log_file is not None:
     print(f'ERROR: Unknown log file level {_log_file_level_name}!', file=sys.stderr)
     print(f'Using fallback: {_log_file_level_name_fallback}', file=sys.stderr)
     _log_file_level = _name_to_level_map[_log_file_level_name_fallback]
 
 if _log_file == '':
-    _file_sink = None
+    _file_sink = spdlog.null_sink_mt()
 else:
     _file_sink = spdlog.basic_file_sink_mt(_log_file, truncate=True)
-    _file_sink.set_level(LogLevel.DEBUG)
+_file_sink.set_level(LogLevel.DEBUG)
 
 
 def get_logger(*name: str or Type) -> spdlog.Logger:
@@ -67,11 +70,12 @@ def get_logger(*name: str or Type) -> spdlog.Logger:
 
     if name not in _loggers:
         # FIXME: colored=False is required for spdlog to work on windows
-        logger = spdlog.ConsoleLogger(name, colored=False)
-        logger.set_pattern('%T [%n|%l]: %v', spdlog.PatternTimeType.local)
-        logger.set_level(_log_level)
+        sinks = [_console_sink]
         if _file_sink is not None:
-            logger.sinks().append(_file_sink)
+            sinks.append(_file_sink)
+        logger = spdlog.SinkLogger(name, sinks)
+        logger.set_pattern('%T [%n|%l]: %v', spdlog.PatternTimeType.local)
+        logger.set_level(LogLevel.TRACE)
         _loggers[name] = logger
 
     return _loggers[name]
