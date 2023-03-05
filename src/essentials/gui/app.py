@@ -4,6 +4,7 @@
 
 @author Kami-Kaze
 """
+
 import ctypes
 from dataclasses import dataclass
 
@@ -11,6 +12,9 @@ import OpenGL.GL as gl
 import glfw
 import imgui
 import pystray
+import win32api
+import win32gui
+import win32con
 from PIL import Image
 from imgui.integrations.glfw import GlfwRenderer
 
@@ -22,6 +26,12 @@ _DWM = ctypes.windll.dwmapi
 
 @dataclass
 class AppConfig:
+    """
+    Basic application configuration
+
+    @note icon_path: must be an .ico file
+    @note background_color: rgb values range from 0 to 1
+    """
     width: int
     height: int
     title: str
@@ -164,9 +174,9 @@ class App:
         # init opengl
         glfw.make_context_current(window)
 
-        # enable dark mode (see https://github.com/fyne-io/fyne/pull/2216/files)
         hndl = glfw.get_win32_window(window)
 
+        # enable dark mode (see https://github.com/fyne-io/fyne/pull/2216/files)
         # check comp (aero) is  enabled (see https://stackoverflow.com/a/48207410/10330869)
         is_comp_enabled = ctypes.c_bool()
         err = _DWM.DwmIsCompositionEnabled(ctypes.byref(is_comp_enabled))

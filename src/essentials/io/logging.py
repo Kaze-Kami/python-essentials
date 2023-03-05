@@ -17,7 +17,9 @@ from typing import Type, Callable, Any
 
 import spdlog
 from spdlog import LogLevel
+_log_file_name_fallback = 'log.txt'
 _log_level_name_fallback = 'info'
+_log_file_level_name_fallback = 'debug'
 _name_to_level_map = {
     'critical': LogLevel.CRITICAL,
     'error'   : LogLevel.ERR,
@@ -31,12 +33,26 @@ _name_to_level_map = {
 # initialize logging
 _loggers: dict[str, spdlog.Logger] = {}
 _log_level_name = os.environ.get('log_level', _log_level_name_fallback)
+_log_file = os.environ.get('log_file', _log_file_name_fallback)
+_log_file_level_name = os.environ.get('log_file_level', _log_file_level_name_fallback)
 _log_level = _name_to_level_map.get(_log_level_name.lower())
+_log_file_level = _name_to_level_map.get(_log_file_level_name.lower())
 
 if _log_level is None:
     print(f'ERROR: Unknown log level {_log_level_name}!', file=sys.stderr)
     print(f'Using fallback: {_log_level_name_fallback}', file=sys.stderr)
     _log_level = _name_to_level_map[_log_level_name_fallback]
+
+if _log_file_level is None and _log_file is not None:
+    print(f'ERROR: Unknown log file level {_log_file_level_name}!', file=sys.stderr)
+    print(f'Using fallback: {_log_file_level_name_fallback}', file=sys.stderr)
+    _log_file_level = _name_to_level_map[_log_file_level_name_fallback]
+
+if _log_file == '':
+    _file_sink = None
+else:
+    _file_sink = spdlog.basic_file_sink_mt(_log_file, truncate=True)
+    _file_sink.set_level(LogLevel.DEBUG)
 
 
 def get_logger(*name: str or Type) -> spdlog.Logger:
@@ -54,6 +70,8 @@ def get_logger(*name: str or Type) -> spdlog.Logger:
         logger = spdlog.ConsoleLogger(name, colored=False)
         logger.set_pattern('%T [%n|%l]: %v', spdlog.PatternTimeType.local)
         logger.set_level(_log_level)
+        if _file_sink is not None:
+            logger.sinks().append(_file_sink)
         _loggers[name] = logger
 
     return _loggers[name]
