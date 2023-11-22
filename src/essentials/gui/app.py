@@ -39,6 +39,7 @@ class AppConfig:
     resizable: bool = False
     start_minimized: bool = False
     background_color: tuple[float, float, float] = (.1, .1, .1)
+    floating: bool = False
 
 
 class App:
@@ -158,6 +159,9 @@ class App:
         if not self._config.resizable:
             glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
 
+        if self._config.floating:
+            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
+
         # Create a windowed mode window and its OpenGL context
         window = glfw.create_window(
                 int(self._config.width), int(self._config.height), self._config.title, None, None
@@ -206,6 +210,14 @@ class App:
         ])
         return tray_icon
 
+    @property
+    def floating(self) -> bool:
+        return glfw.get_window_attrib(self._window, glfw.FLOATING)
+
+    @floating.setter
+    def floating(self, value: bool):
+        glfw.set_window_attrib(self._window, glfw.FLOATING, glfw.TRUE if value else glfw.FLOATING)
+
     def _imgui_frame(self):
         if not glfw.get_window_attrib(self._window, glfw.VISIBLE):
             return
@@ -227,7 +239,6 @@ class App:
                     imgui.WINDOW_NO_TITLE_BAR)
 
         self.render()
-
 
         imgui.pop_style_color()
         imgui.pop_style_var(2)
