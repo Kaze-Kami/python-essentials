@@ -143,6 +143,16 @@ class App:
         """
         return []
 
+    # noinspection PyMethodMayBeStatic
+    def get_additional_imgui_flags(self) -> int:
+        """
+        To be overwritten by client to provide additional imGui window flags
+        to the 'main' window.
+        For example: WINDOW_NO_TITLE_BAR to remove the title bar
+        :return:
+        """
+        return 0
+
     @log_call(_CORE_LOGGER, name='Initialize GLFW')
     def _init_glfw(self):
         if not glfw.init():
@@ -236,7 +246,8 @@ class App:
                     imgui.WINDOW_NO_MOVE |
                     imgui.WINDOW_ALWAYS_AUTO_RESIZE |
                     imgui.WINDOW_NO_COLLAPSE |
-                    imgui.WINDOW_NO_TITLE_BAR)
+                    imgui.WINDOW_NO_TITLE_BAR |
+                    self.get_additional_imgui_flags())
 
         self.render()
 
