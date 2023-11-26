@@ -282,13 +282,14 @@ class App:
         imgui.push_style_var(imgui.STYLE_WINDOW_ROUNDING, 0.)
         imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0.)
         imgui.push_style_color(imgui.COLOR_WINDOW_BACKGROUND, *self.window.background_color)
-        imgui.begin('', False,
+        imgui.begin('main', False,
                     imgui.WINDOW_NO_NAV |
                     imgui.WINDOW_NO_NAV_INPUTS |
                     imgui.WINDOW_NO_MOVE |
                     imgui.WINDOW_ALWAYS_AUTO_RESIZE |
                     imgui.WINDOW_NO_COLLAPSE |
                     imgui.WINDOW_NO_TITLE_BAR |
+                    imgui.WINDOW_NO_BRING_TO_FRONT_ON_FOCUS |
                     self.get_additional_imgui_flags())
 
         self.render()

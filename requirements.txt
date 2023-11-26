@@ -1,10 +1,11 @@
-pybind11==2.10.3
-requests==2.28.2
-spdlog==2.0.4
-glfw==2.5.6
-numpy==1.24.2
-pyopengl==3.1.6
-imgui[glfw]==1.4.1
-pystray==0.19.4
-pillow==9.4.0
-pywin32==305
+# required for spdlog to properly build...
+pybind11==2.11.1
+requests==2.31.0
+spdlog==2.0.6
+glfw==2.6.3
+numpy==1.26.2
+pyopengl==3.1.7
+pystray==0.19.5
+pillow==10.1.0
+pywin32==306
+imgui[glfw]==2.0.0
