@@ -303,9 +303,20 @@ class App:
         glfw.swap_buffers(self._raw_window)
 
     def _on_minimize(self, _, minimized):
+        """
+        glfw minify callback
+        :return:
+        """
         if minimized and self._tray_icon is not None:
             self.on_hide()
             glfw.hide_window(self._raw_window)
+
+    def _on_move(self, _, x, y):
+        """
+        glfw window move callback
+        :return:
+        """
+        self.on_move((x, y))
 
     def _show_window(self, *_):
         glfw.show_window(self._raw_window)
@@ -315,9 +326,6 @@ class App:
 
     def _stop(self, *_):
         self._should_exit = True
-
-    def _on_move(self, *args):
-        self._logger.info(f'Moved: {args=}')
 
     @log_call(_CORE_LOGGER, name='Shutdown')
     def _shutdown(self):
