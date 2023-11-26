@@ -12,9 +12,6 @@ import OpenGL.GL as gl
 import glfw
 import imgui
 import pystray
-import win32api
-import win32gui
-import win32con
 from PIL import Image
 from imgui.integrations.glfw import GlfwRenderer
 
@@ -22,6 +19,10 @@ from essentials.gui.core import _CORE_LOGGER
 from essentials.io.logging import log_call
 
 _DWM = ctypes.windll.dwmapi
+
+
+def GLFW_BOOL(value: bool):
+    return glfw.TRUE if value else glfw.FALSE
 
 
 @dataclass
@@ -36,10 +37,45 @@ class AppConfig:
     height: int
     title: str
     icon_path: str = None
-    resizable: bool = False
     start_minimized: bool = False
-    background_color: tuple[float, float, float] = (.1, .1, .1)
-    floating: bool = False
+
+
+class Window:
+    def __init__(self, ptr):
+        self._ptr = ptr
+        self._background_color = (.1, .1, .1, 1.)
+
+    @property
+    def floating(self) -> bool:
+        return bool(glfw.get_window_attrib(self._ptr, glfw.FLOATING))
+
+    @floating.setter
+    def floating(self, value: bool):
+        glfw.set_window_attrib(self._ptr, glfw.FLOATING, GLFW_BOOL(value))
+
+    @property
+    def resizable(self) -> bool:
+        return bool(glfw.get_window_attrib(self._ptr, glfw.RESIZABLE))
+
+    @resizable.setter
+    def resizable(self, value: bool):
+        glfw.set_window_attrib(self._ptr, glfw.FLOATING, GLFW_BOOL(value))
+
+    @property
+    def background_color(self) -> (float, float, float, float):
+        return self._background_color
+
+    @background_color.setter
+    def background_color(self, rgba: (float, float, float, float)):
+        self._background_color = rgba
+
+    @property
+    def position(self) -> (int, int):
+        return glfw.get_window_pos(self._ptr)
+
+    @position.setter
+    def position(self, pos: (int, int)):
+        glfw.set_window_pos(self._ptr, *pos)
 
 
 class App:
@@ -50,7 +86,7 @@ class App:
         self._icon_image = None
         if config.icon_path is not None:
             self._icon_image = Image.open(config.icon_path)
-        self._window = self._init_glfw()
+        self._raw_window = self._init_glfw()
         self._imgui_impl = self._init_imgui()
 
         self._tray_icon = None
@@ -59,6 +95,9 @@ class App:
 
         self._should_exit = False
         self._logger.info('Initialization complete')
+
+        # proxy for client side glfw functions
+        self.window = Window(self._raw_window)
 
     def update(self):
         """
@@ -88,6 +127,14 @@ class App:
         """
         pass
 
+    def on_move(self, pos: (int, int)):
+        """
+        Callback to be overwritten by client
+        :param pos: new (x, y) position of window
+        :return:
+        """
+        pass
+
     def on_start(self):
         """
         Callback to be overwritten by client
@@ -101,6 +148,13 @@ class App:
         :return:
         """
         pass
+
+    def exit(self):
+        """
+        Close the application
+        :return:
+        """
+        self._should_exit = True
 
     def run(self):
         """
@@ -121,8 +175,7 @@ class App:
                 glfw.poll_events()
                 self._imgui_impl.process_inputs()
 
-                if glfw.window_should_close(self._window):
-                    glfw.set_window_should_close(self._window, glfw.FALSE)
+                if glfw.window_should_close(self._raw_window):
                     self._should_exit = True
 
                 self.update()
@@ -166,12 +219,6 @@ class App:
         glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, glfw.TRUE)
         glfw.window_hint(glfw.FOCUS_ON_SHOW, glfw.TRUE)
 
-        if not self._config.resizable:
-            glfw.window_hint(glfw.RESIZABLE, glfw.FALSE)
-
-        if self._config.floating:
-            glfw.window_hint(glfw.FLOATING, glfw.TRUE)
-
         # Create a windowed mode window and its OpenGL context
         window = glfw.create_window(
                 int(self._config.width), int(self._config.height), self._config.title, None, None
@@ -180,7 +227,10 @@ class App:
             glfw.terminate()
             raise Exception("Could not initialize Window")
 
+        # register callbacks
         glfw.set_window_iconify_callback(window, self._on_minimize)
+        glfw.set_window_pos_callback(window, self._on_move)
+
         # window icon
         if self._icon_image is not None:
             glfw.set_window_icon(window, 1, [self._icon_image])
@@ -207,7 +257,7 @@ class App:
     @log_call(_CORE_LOGGER, name='Initialize ImGui')
     def _init_imgui(self):
         imgui.create_context()
-        imgui_impl = GlfwRenderer(self._window)
+        imgui_impl = GlfwRenderer(self._raw_window)
         gl.glClearColor(0, 0, 0, 1.)
         return imgui_impl
 
@@ -220,16 +270,8 @@ class App:
         ])
         return tray_icon
 
-    @property
-    def floating(self) -> bool:
-        return glfw.get_window_attrib(self._window, glfw.FLOATING)
-
-    @floating.setter
-    def floating(self, value: bool):
-        glfw.set_window_attrib(self._window, glfw.FLOATING, glfw.TRUE if value else glfw.FLOATING)
-
     def _imgui_frame(self):
-        if not glfw.get_window_attrib(self._window, glfw.VISIBLE):
+        if not glfw.get_window_attrib(self._raw_window, glfw.VISIBLE):
             return
 
         io = self._imgui_impl.io
@@ -239,7 +281,7 @@ class App:
         imgui.set_next_window_size(*io.display_size)
         imgui.push_style_var(imgui.STYLE_WINDOW_ROUNDING, 0.)
         imgui.push_style_var(imgui.STYLE_WINDOW_BORDERSIZE, 0.)
-        imgui.push_style_color(imgui.COLOR_WINDOW_BACKGROUND, *self._config.background_color, 1.0)
+        imgui.push_style_color(imgui.COLOR_WINDOW_BACKGROUND, *self.window.background_color)
         imgui.begin('', False,
                     imgui.WINDOW_NO_NAV |
                     imgui.WINDOW_NO_NAV_INPUTS |
@@ -258,21 +300,24 @@ class App:
 
         imgui.render()
         self._imgui_impl.render(imgui.get_draw_data())
-        glfw.swap_buffers(self._window)
+        glfw.swap_buffers(self._raw_window)
 
     def _on_minimize(self, _, minimized):
         if minimized and self._tray_icon is not None:
             self.on_hide()
-            glfw.hide_window(self._window)
+            glfw.hide_window(self._raw_window)
 
     def _show_window(self, *_):
-        glfw.show_window(self._window)
-        glfw.restore_window(self._window)
-        glfw.focus_window(self._window)
+        glfw.show_window(self._raw_window)
+        glfw.restore_window(self._raw_window)
+        glfw.focus_window(self._raw_window)
         self.on_show()
 
     def _stop(self, *_):
         self._should_exit = True
+
+    def _on_move(self, *args):
+        self._logger.info(f'Moved: {args=}')
 
     @log_call(_CORE_LOGGER, name='Shutdown')
     def _shutdown(self):
