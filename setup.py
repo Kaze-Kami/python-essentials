@@ -8,7 +8,7 @@ from distutils.core import setup
 
 setup(
         name='Python Essentials',
-        version='0.1.dev0',
+        version='0.1.dev1',
         description='Python utilities I\'ve written and use',
         author='Kami Kaze',
         # todo: author_email='',
