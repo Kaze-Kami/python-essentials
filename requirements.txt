@@ -9,3 +9,4 @@ pystray==0.19.5
 pillow==10.1.0
 pywin32==306
 imgui[glfw]==2.0.0
+attrs==23.1.0
