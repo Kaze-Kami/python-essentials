@@ -17,3 +17,12 @@ v0.1, 2022-12-18 -- Initial release.
     - default to no app icon
     - fix spinner clear line on close
     - add file utilities
+.dev1
+    :: 2023-11-22
+    - add floating option for window
+    - enable menu bar and add 'additional imgui flags'
+    ::2023-11-26
+    - add app.window property, which proxies access to some glfw window properties
+    - add window_moved callback
+    - update dependencies
+    - improve config loading and error handling thereof
