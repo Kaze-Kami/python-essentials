@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 import requests
 
-from essentials.utils.text_utils import split_parse
+from essentials.util.text_utils import split_parse
 
 
 @dataclass
