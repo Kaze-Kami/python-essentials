@@ -12,7 +12,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 from .task import Task, TaskStatus
-from ..k_itertools.sorting import SortBy
+from ..itertools.sorting import SortBy
 from ..tui import ScrollableList
 from ..tui.formatter import Formatter
 from ..tui.utilities import progress_line

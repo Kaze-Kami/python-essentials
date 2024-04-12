@@ -26,3 +26,8 @@ v0.1, 2022-12-18 -- Initial release.
     - add window_moved callback
     - update dependencies
     - improve config loading and error handling thereof
+.dev2
+    :: 2024-04-12
+    - include python-utils:
+        - add MTProcessor
+        - add tui (NCurses)
