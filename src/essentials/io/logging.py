@@ -16,7 +16,10 @@ from functools import wraps
 from typing import Type, Callable, Any
 
 import spdlog
-from spdlog import LogLevel
+
+from spdlog import LogLevel as _LogLevel
+LogLevel = _LogLevel  # seems python doesn't like to re-import stuff w/o its own (?) name (from io.logging import LogLevel)
+
 _log_file_name_fallback = 'log.txt'
 _log_level_name_fallback = 'info'
 _log_file_level_name_fallback = 'debug'

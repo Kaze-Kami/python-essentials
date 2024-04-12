@@ -67,4 +67,4 @@ def duration(value: timedelta or float, millis=True):
             required = True
             strs.append(f'{v:{f}}{u}')
 
-    return ' '.join(strs
+    return ' '.join(strs)
